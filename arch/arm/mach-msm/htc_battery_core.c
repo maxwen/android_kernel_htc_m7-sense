@@ -28,6 +28,9 @@
 #include <linux/android_alarm.h>
 #include <mach/board_htc.h>
 
+#ifdef CONFIG_FORCE_FAST_CHARGE
+#include <linux/fastchg.h>
+#endif
 
 static ssize_t htc_battery_show_property(struct device *dev,
 					struct device_attribute *attr,
@@ -895,7 +898,12 @@ int htc_battery_core_update_changed(void)
 			battery_core_info.rep.overload,
 			battery_core_info.htc_charge_full);
 
-
+#ifdef CONFIG_FORCE_FAST_CHARGE
+	/* if fast charge is enabled - fake a AC event */
+	if (force_fast_charge == 1) {
+		is_send_ac_uevent = 1;
+	}
+#endif
 	
 	if (is_send_batt_uevent) {
 		power_supply_changed(&htc_power_supplies[BATTERY_SUPPLY]);
